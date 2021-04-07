@@ -1,5 +1,13 @@
 import { BaseElement } from "./Base";
 
+const drawCicle = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number) => {
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.stroke();
+  ctx.closePath();
+}
+
 export class Ant implements BaseElement {
   x: number = 0;
   y: number = 0;
@@ -8,14 +16,10 @@ export class Ant implements BaseElement {
     this.ctx = ctx;
   }
 
-  draw(r?: number) {
+  draw(r: number) {
     this.ctx.strokeStyle = '#CC0000';
-    this.ctx.beginPath();
-    this.ctx.arc(this.x, this.y, r || 1, 0, 2 * Math.PI);
     this.ctx.fillStyle = '#ff5555';
-    this.ctx.fill();
-    this.ctx.stroke();
-    this.ctx.closePath();
+    drawCicle(this.ctx, this.x, this.y, r);
   };
 }
 
@@ -72,10 +76,13 @@ export class AntsHome {
   y: number = 0;
   ctx: CanvasRenderingContext2D;
   ants: WalkingAnt[];
+  size: number;
   constructor(ctx: CanvasRenderingContext2D, totalAnts: number, size = 100) {
     this.ctx = ctx;
     this.x = this.ctx.canvas.width/2;
     this.y = this.ctx.canvas.height/2;
+    this.size = size;
+
     this.ants = [...Array(totalAnts)].map((_, i, all) => {
       const direction = ((360 / all.length) * i);
       const ant = new WalkingAnt(this.ctx, direction)
@@ -87,8 +94,16 @@ export class AntsHome {
   }
 
   escape() {
+    
     this.ants.forEach((ant, i) => {
       ant.walk(i ? this.ants.slice(0, i - 1) : []);
     });
+  
+    var gradient = this.ctx.createRadialGradient(this.x, this.y, this.size / 2, this.x, this.y, this.size / 0.8);
+    gradient.addColorStop(0, '#000000FF');
+    gradient.addColorStop(1, '#00000000');
+    this.ctx.arc(this.x, this.y, this.size * 1.5, 0, 2 * Math.PI);
+    this.ctx.fillStyle = gradient;
+    this.ctx.fill();
   }
 }
