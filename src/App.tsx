@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react"
-import { WalkingAnt } from "./Elements/Ant";
+import { AntsHome } from "./Elements/Ant";
 
 export const App = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -9,26 +9,25 @@ export const App = () => {
     const context = canvas?.getContext('2d');
     if (context) {
       const clearReact = () => {
-        context.fillStyle = '#444'
+        context.fillStyle = '#1f1f1f'
         context.fillRect(0, 0, context.canvas.width, context.canvas.height);
       }
-      clearReact();
-      
-      const ants = [...Array(500)].map((_, i, all) => new WalkingAnt(context, ((360 / all.length) * i)));
-      ants.forEach(ant => {
-        ant.x = context.canvas.width/2;
-        ant.y = context.canvas.height/2;
-      });
 
       let animationFrameId: number;
-      const render = () => {
+      let oldTimeStamp: number;
+      const antsHome = new AntsHome(context, 400, 30);
+      const fpsDisplay = document.getElementById('fps');
+      const render:FrameRequestCallback = (timeStamp) => {
+        if (fpsDisplay) {
+          const secondsPassed = (timeStamp - (oldTimeStamp || 0)) / 1000;
+          oldTimeStamp = timeStamp;
+          fpsDisplay.innerHTML = `${Math.round(1 / secondsPassed)}fps`;
+        }
         clearReact();
-        ants.forEach(ant => {
-          ant.walk();
-        });
+        antsHome.escape();
         animationFrameId = window.requestAnimationFrame(render)
       }
-      render()
+      render(Number(new Date()))
       return () => {
         window.cancelAnimationFrame(animationFrameId)
       }
@@ -46,6 +45,7 @@ export const App = () => {
         color: 'white'
       }}
     >
+      <p id="fps">0</p>
       <canvas 
         ref={canvasRef}
         width={1000}
