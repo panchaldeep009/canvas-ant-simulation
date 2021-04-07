@@ -13,13 +13,25 @@ export const App = () => {
         context.fillRect(0, 0, context.canvas.width, context.canvas.height);
       }
       clearReact();
-      const ant = new WalkingAnt(context, 45);
-      ant.x = context.canvas.width/2;
-      ant.y = context.canvas.height/2;
-      setInterval(() => {
+      
+      const ants = [...Array(500)].map((_, i, all) => new WalkingAnt(context, ((360 / all.length) * i)));
+      ants.forEach(ant => {
+        ant.x = context.canvas.width/2;
+        ant.y = context.canvas.height/2;
+      });
+
+      let animationFrameId: number;
+      const render = () => {
         clearReact();
-        ant.walk();
-      }, 50);
+        ants.forEach(ant => {
+          ant.walk();
+        });
+        animationFrameId = window.requestAnimationFrame(render)
+      }
+      render()
+      return () => {
+        window.cancelAnimationFrame(animationFrameId)
+      }
     }
   }, []);
 
@@ -36,7 +48,7 @@ export const App = () => {
     >
       <canvas 
         ref={canvasRef}
-        width={800}
+        width={1000}
         height={600}
       />
     </div>
