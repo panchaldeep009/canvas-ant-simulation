@@ -30,13 +30,18 @@ export class WalkingAnt extends Ant {
   trailStep = 5;
   steps = 0;
   trail: [number,number][] = [];
-  constructor (ctx: CanvasRenderingContext2D, walkingDirection: number) {
+  home: [number,number,number];
+  constructor (ctx: CanvasRenderingContext2D, walkingDirection: number, home: [number,number,number]) {
     super(ctx);
     this.walkingDirection = walkingDirection;
+    this.home = home;
   }
 
   updateTrail() {
-    if (this.trail.length > 99) {
+    // clear trail if home is near
+    if ((this.radius + this.home[2]) >= antDistance(this, [this.home[0], this.home[1]])) {
+      this.trail = [];
+    } else if (this.trail.length > 99) {
       const [,...trail] = this.trail;
       this.trail = trail;
     }
@@ -50,7 +55,8 @@ export class WalkingAnt extends Ant {
   }
 
   walk(OtherAnts: WalkingAnt[]) {
-    this.walkingDirection = this.walkingDirection + ((Math.random() - 0.5) * 30);
+
+    this.walkingDirection = this.walkingDirection + ((Math.random() - 0.5) * 20);
     const x = this.x;
     const y = this.y;
     let newDirection = 1;
@@ -62,7 +68,7 @@ export class WalkingAnt extends Ant {
       || this.y < this.distance
       || this.y > (this.ctx.canvas.height - this.distance)
       // Intersect with nearby ants
-      || OtherAnts.find(ant => (this.radius * 3) > antDistance(this, ant))
+      || OtherAnts.find(ant => (this.radius * 3) > antDistance(this, [ant.x, ant.y]))
       )
       && newDirection < 10
     ) {
@@ -82,9 +88,9 @@ export class WalkingAnt extends Ant {
   }
 }
 
-const antDistance = (antA: Ant, antB: Ant) => {
-  let xDistance = antB.x - antA.x;
-  let yDistance = antB.y - antA.y;
+const antDistance = (antA: Ant, [x, y]: [number, number]) => {
+  let xDistance = x - antA.x;
+  let yDistance = y - antA.y;
   return Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2))
 }
 
@@ -102,7 +108,7 @@ export class AntsHome {
 
     this.ants = [...Array(totalAnts)].map((_, i, all) => {
       const direction = ((360 / all.length) * i);
-      const ant = new WalkingAnt(this.ctx, direction)
+      const ant = new WalkingAnt(this.ctx, direction, [this.x, this.y, this.size])
       const thita = (Math.PI * direction) / 180;
       ant.x = this.x + (Math.cos(thita) * size);
       ant.y = this.y + (Math.sin(thita) * size);
