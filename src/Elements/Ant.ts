@@ -1,12 +1,6 @@
+import { drawCicle } from "../utils";
 import { BaseElement } from "./Base";
-
-const drawCicle = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number) => {
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, 2 * Math.PI);
-  ctx.fill();
-  ctx.stroke();
-  ctx.closePath();
-}
+import { Food } from "./Food";
 
 export class Ant implements BaseElement {
   x: number = 0;
@@ -31,6 +25,7 @@ export class WalkingAnt extends Ant {
   steps = 0;
   trail: [number,number][] = [];
   home: [number,number,number];
+  caryingFood?: Food;
   constructor (ctx: CanvasRenderingContext2D, walkingDirection: number, home: [number,number,number]) {
     super(ctx);
     this.walkingDirection = walkingDirection;
@@ -38,53 +33,89 @@ export class WalkingAnt extends Ant {
   }
 
   updateTrail() {
-    // clear trail if home is near
-    if ((this.radius + this.home[2]) >= antDistance(this, [this.home[0], this.home[1]])) {
-      this.trail = [];
-    } else if (this.trail.length > 99) {
-      const [,...trail] = this.trail;
-      this.trail = trail;
+    this.steps++;
+    if (this.steps === this.trailStep) {
+      // clear trail if home is near
+      if ((this.radius + this.home[2]) >= antDistance(this, [this.home[0], this.home[1]])) {
+        this.trail = [];
+      } else if (this.trail.length > 99) {
+        const [,...trail] = this.trail;
+        this.trail = trail;
+      }
+      this.trail = [...this.trail, [this.x, this.y]];
+      this.steps = 0;
     }
-    this.trail = [...this.trail, [this.x, this.y]];
   }
 
-  nextPoint() {
+  nextStep() {
+    this.walkingDirection = this.walkingDirection + ((Math.random() - 0.5) * 30);
     const thita = (Math.PI * this.walkingDirection) / 180;
     this.x = this.x + (Math.cos(thita) * this.distance);
     this.y = this.y + (Math.sin(thita) * this.distance);
   }
 
-  walk(OtherAnts: WalkingAnt[]) {
+  checkWallCollision() {
+    // wall ditection
+    return this.x < this.distance
+    || this.x > (this.ctx.canvas.width - this.distance)
+    || this.y < this.distance
+    || this.y > (this.ctx.canvas.height - this.distance)
+  }
 
-    this.walkingDirection = this.walkingDirection + ((Math.random() - 0.5) * 20);
+  checkAntsCollision(Ants: WalkingAnt[]) {
+    // Other ants collision
+    return Ants.find(ant => (this.radius * 3) > antDistance(this, [ant.x, ant.y]))
+  }
+
+  randomWalk(currentX: number, currentY: number) {
+    this.nextStep();
+    while(this.checkWallCollision()) {
+      this.x = currentX;
+      this.y = currentY;
+      this.nextStep();
+    }
+  }
+
+  walk(Ants: WalkingAnt[], foods: Food[]) {
+    this.caryingFood = foods.find(f => (f.r + this.radius) >= antDistance(this, [f.x, f.y]));
+
+    // Ant current Position
     const x = this.x;
     const y = this.y;
-    let newDirection = 1;
-    this.nextPoint();
-    while(
-      (// wall ditection
-      this.x < this.distance
-      || this.x > (this.ctx.canvas.width - this.distance)
-      || this.y < this.distance
-      || this.y > (this.ctx.canvas.height - this.distance)
-      // Intersect with nearby ants
-      || OtherAnts.find(ant => (this.radius * 3) > antDistance(this, [ant.x, ant.y]))
-      )
-      && newDirection < 10
-    ) {
-      newDirection++;
+
+    // random walking
+    this.randomWalk(x, y);
+
+    if (this.checkAntsCollision(Ants)) {
+      // Stop walking if any ant ahead
       this.x = x;
       this.y = y;
-      this.walkingDirection = this.walkingDirection - 5;
-      this.nextPoint();
+    } else {
+      // Update trail if ant has any successful step
+      this.updateTrail();
     }
 
-    this.steps++;
-    if (this.steps === this.trailStep) {
-      this.updateTrail();
-      this.steps = 0;
-    }
     this.draw(this.radius);
+
+    // let lastTrailPoint = this.trail[this.trail.length - 1];
+    // if (this.caryingFood && lastTrailPoint) {
+    //   if (this.distance <= antDistance(this, [lastTrailPoint[0], lastTrailPoint[1]])) {
+    //     this.trail.pop();
+    //     lastTrailPoint = this.trail[this.trail.length - 1];
+    //   }
+    //   const [x, y] = lastTrailPoint;
+    //   this.walkingDirection = Math.asin((x - this.x)/(y - this.y)) * 180/Math.PI;
+    //   const previousX = this.x;
+    //   const previousY = this.y;
+    //   this.nextPoint();
+    //   if (checkCollision()) {
+    //     this.x = previousX;
+    //     this.y = previousY;
+    //   }
+    //   this.draw(this.radius);
+    // } else {
+  
+    // }
   }
 }
 
@@ -100,6 +131,8 @@ export class AntsHome {
   ctx: CanvasRenderingContext2D;
   ants: WalkingAnt[];
   size: number;
+  foods: Food[] = [];
+
   constructor(ctx: CanvasRenderingContext2D, totalAnts: number, size = 100) {
     this.ctx = ctx;
     this.x = this.ctx.canvas.width/2;
@@ -110,8 +143,8 @@ export class AntsHome {
       const direction = ((360 / all.length) * i);
       const ant = new WalkingAnt(this.ctx, direction, [this.x, this.y, this.size])
       const thita = (Math.PI * direction) / 180;
-      ant.x = this.x + (Math.cos(thita) * size);
-      ant.y = this.y + (Math.sin(thita) * size);
+      ant.x = this.x + (Math.cos(thita) * (size/2));
+      ant.y = this.y + (Math.sin(thita) * (size/2));
       return ant;
     });
   }
@@ -128,7 +161,7 @@ export class AntsHome {
 
   escape() {
     this.ants.forEach((ant, i) => {
-      ant.walk(i ? this.ants.slice(0, i - 1) : []);
+      ant.walk(i ? this.ants.slice(0, i - 1) : [], this.foods);
     });
   
     var gradient = this.ctx.createRadialGradient(this.x, this.y, this.size / 2, this.x, this.y, this.size / 0.8);
