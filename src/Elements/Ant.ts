@@ -27,9 +27,20 @@ export class WalkingAnt extends Ant {
   walkingDirection: number;
   distance = 3; 
   radius = 1.6;
+  trailStep = 5;
+  steps = 0;
+  trail: [number,number][] = [];
   constructor (ctx: CanvasRenderingContext2D, walkingDirection: number) {
     super(ctx);
     this.walkingDirection = walkingDirection;
+  }
+
+  updateTrail() {
+    if (this.trail.length > 99) {
+      const [,...trail] = this.trail;
+      this.trail = trail;
+    }
+    this.trail = [...this.trail, [this.x, this.y]];
   }
 
   nextPoint() {
@@ -60,6 +71,12 @@ export class WalkingAnt extends Ant {
       this.y = y;
       this.walkingDirection = this.walkingDirection - 5;
       this.nextPoint();
+    }
+
+    this.steps++;
+    if (this.steps === this.trailStep) {
+      this.updateTrail();
+      this.steps = 0;
     }
     this.draw(this.radius);
   }
@@ -93,8 +110,17 @@ export class AntsHome {
     });
   }
 
+  drawTrail() {    
+    this.ctx.strokeStyle = 'white';
+    this.ctx.fillStyle = 'blue';
+    this.ants.forEach((ant, i) => {
+      ant.trail.forEach((step) => {
+        drawCicle(this.ctx, step[0], step[1], 1);
+      })
+    });
+  }
+
   escape() {
-    
     this.ants.forEach((ant, i) => {
       ant.walk(i ? this.ants.slice(0, i - 1) : []);
     });

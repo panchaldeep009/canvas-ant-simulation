@@ -15,7 +15,7 @@ export const App = () => {
 
       let animationFrameId: number;
       let oldTimeStamp: number;
-      const antsHome = new AntsHome(context, 400, 30);
+      const antsHome = new AntsHome(context, 2, 30);
       const fpsDisplay = document.getElementById('fps');
       const render:FrameRequestCallback = (timeStamp) => {
         if (fpsDisplay) {
@@ -24,6 +24,7 @@ export const App = () => {
           fpsDisplay.innerHTML = `${Math.round(1 / secondsPassed)}fps`;
         }
         clearReact();
+        antsHome.drawTrail();
         antsHome.escape();
         animationFrameId = window.requestAnimationFrame(render)
       }
