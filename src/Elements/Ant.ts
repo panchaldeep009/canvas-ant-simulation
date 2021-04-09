@@ -2,17 +2,22 @@ import { drawCicle } from "../utils";
 import { BaseElement } from "./Base";
 import { Food } from "./Food";
 
+const COLOR_RED = '#ff5555';
+const COLOR_GREEN = 'green';
+const COLOR_BLUE = 'cyan';
+
 export class Ant implements BaseElement {
   x: number = 0;
   y: number = 0;
   ctx: CanvasRenderingContext2D;
+  color = COLOR_RED;
   constructor(ctx: CanvasRenderingContext2D) {
     this.ctx = ctx;
   }
 
   draw(r: number) {
-    this.ctx.strokeStyle = '#CC0000';
-    this.ctx.fillStyle = '#ff5555';
+    this.ctx.strokeStyle = this.color;
+    this.ctx.fillStyle = this.color;
     drawCicle(this.ctx, this.x, this.y, r);
   };
 }
@@ -104,6 +109,7 @@ export class WalkingAnt extends Ant {
       this.trail = [];
       // drop food
       if (this.caryingFood) {
+        this.color = COLOR_RED;
         this.caryingFood = undefined;
       }
     } 
@@ -118,8 +124,11 @@ export class WalkingAnt extends Ant {
     const y = this.y;
 
     if (this.caryingFood && this.trail.length > 0) {
+      this.color = COLOR_GREEN;
       this.trailWalk()
     } else {
+      // TODO: Finds nearest trail when ant's trail fade away;
+
       // random walking
       this.randomWalk(x, y);
     }
