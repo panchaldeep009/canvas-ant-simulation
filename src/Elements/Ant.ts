@@ -34,18 +34,15 @@ export class WalkingAnt extends Ant {
 
   updateTrail() {
     if (!this.caryingFood) {
-      this.steps++;
-      if (this.steps === this.trailStep) {
-        // clear trail if home is near
-        if ((this.radius + this.home[2]) >= antDistance(this, [this.home[0], this.home[1]])) {
-          this.trail = [];
-        } else if (this.trail.length > 99) {
+      if (this.steps === 0) {
+        this.steps = this.trailStep;
+        if (this.trail.length > 99) {
           const [,...trail] = this.trail;
           this.trail = trail;
         }
         this.trail = [...this.trail, [this.x, this.y]];
-        this.steps = 0;
       }
+      this.steps--;
     }
   }
 
@@ -100,6 +97,16 @@ export class WalkingAnt extends Ant {
   }
 
   walk(Ants: WalkingAnt[], foods: Food[]) {
+
+    // When ant is at home
+    if ((this.radius + this.home[2]) >= antDistance(this, [this.home[0], this.home[1]])) {
+      // clear trails
+      this.trail = [];
+      // drop food
+      if (this.caryingFood) {
+        this.caryingFood = undefined;
+      }
+    } 
 
     // Crary food if ant is not already carying
     if (!this.caryingFood) {
