@@ -33,22 +33,23 @@ export class WalkingAnt extends Ant {
   }
 
   updateTrail() {
-    this.steps++;
-    if (this.steps === this.trailStep) {
-      // clear trail if home is near
-      if ((this.radius + this.home[2]) >= antDistance(this, [this.home[0], this.home[1]])) {
-        this.trail = [];
-      } else if (this.trail.length > 99) {
-        const [,...trail] = this.trail;
-        this.trail = trail;
+    if (!this.caryingFood) {
+      this.steps++;
+      if (this.steps === this.trailStep) {
+        // clear trail if home is near
+        if ((this.radius + this.home[2]) >= antDistance(this, [this.home[0], this.home[1]])) {
+          this.trail = [];
+        } else if (this.trail.length > 99) {
+          const [,...trail] = this.trail;
+          this.trail = trail;
+        }
+        this.trail = [...this.trail, [this.x, this.y]];
+        this.steps = 0;
       }
-      this.trail = [...this.trail, [this.x, this.y]];
-      this.steps = 0;
     }
   }
 
   nextStep() {
-    this.walkingDirection = this.walkingDirection + ((Math.random() - 0.5) * 30);
     const thita = (Math.PI * this.walkingDirection) / 180;
     this.x = this.x + (Math.cos(thita) * this.distance);
     this.y = this.y + (Math.sin(thita) * this.distance);
@@ -68,23 +69,54 @@ export class WalkingAnt extends Ant {
   }
 
   randomWalk(currentX: number, currentY: number) {
+    const randomDirection = () => {
+      this.walkingDirection = this.walkingDirection + ((Math.random() - 0.5) * 30);
+    }
+    randomDirection();
     this.nextStep();
     while(this.checkWallCollision()) {
       this.x = currentX;
       this.y = currentY;
+      this.walkingDirection = this.walkingDirection + ((Math.random() - 0.5) * 30);
+      randomDirection();
       this.nextStep();
     }
   }
 
+  trailWalk() {
+    let lastTrailPoint = this.trail[this.trail.length - 1];
+    if (this.caryingFood && lastTrailPoint) {
+      // remove last trail step if ant is on that step
+      if (this.trail.length > 0 && this.distance >= antDistance(this, [lastTrailPoint[0], lastTrailPoint[1]])) {
+        this.trail.pop();
+        lastTrailPoint = this.trail[this.trail.length - 1];
+      }
+      if (lastTrailPoint) {
+        const [x, y] = lastTrailPoint;
+        this.walkingDirection = Math.atan2((y - this.y), (x - this.x)) * 180/Math.PI;
+        this.nextStep();
+      }
+    }
+  }
+
   walk(Ants: WalkingAnt[], foods: Food[]) {
-    this.caryingFood = foods.find(f => (f.r + this.radius) >= antDistance(this, [f.x, f.y]));
+
+    // Crary food if ant is not already carying
+    if (!this.caryingFood) {
+      this.caryingFood = foods.find(f => (f.r + this.radius) >= antDistance(this, [f.x, f.y]));
+    }
 
     // Ant current Position
     const x = this.x;
     const y = this.y;
 
-    // random walking
-    this.randomWalk(x, y);
+    if (this.caryingFood && this.trail.length > 0) {
+      this.trailWalk()
+    } else {
+      // random walking
+      this.randomWalk(x, y);
+    }
+
 
     if (this.checkAntsCollision(Ants)) {
       // Stop walking if any ant ahead
@@ -96,26 +128,6 @@ export class WalkingAnt extends Ant {
     }
 
     this.draw(this.radius);
-
-    // let lastTrailPoint = this.trail[this.trail.length - 1];
-    // if (this.caryingFood && lastTrailPoint) {
-    //   if (this.distance <= antDistance(this, [lastTrailPoint[0], lastTrailPoint[1]])) {
-    //     this.trail.pop();
-    //     lastTrailPoint = this.trail[this.trail.length - 1];
-    //   }
-    //   const [x, y] = lastTrailPoint;
-    //   this.walkingDirection = Math.asin((x - this.x)/(y - this.y)) * 180/Math.PI;
-    //   const previousX = this.x;
-    //   const previousY = this.y;
-    //   this.nextPoint();
-    //   if (checkCollision()) {
-    //     this.x = previousX;
-    //     this.y = previousY;
-    //   }
-    //   this.draw(this.radius);
-    // } else {
-  
-    // }
   }
 }
 

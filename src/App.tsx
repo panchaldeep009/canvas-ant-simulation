@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
 import { AntsHome } from "./Elements/Ant";
 import { Food } from "./Elements/Food";
+import { drawCicle } from "./utils";
 
 export const App = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -16,7 +17,7 @@ export const App = () => {
 
       let animationFrameId: number;
       let oldTimeStamp: number;
-      const antsHome = new AntsHome(context, 500, 30);
+      const antsHome = new AntsHome(context, 5, 30);
       antsHome.foods = [new Food(context, 700, 520), new Food(context, 150, 520), new Food(context, 500, 120)];
       const fpsDisplay = document.getElementById('fps');
 
@@ -26,8 +27,9 @@ export const App = () => {
           oldTimeStamp = timeStamp;
           fpsDisplay.innerHTML = `${Math.round(1 / secondsPassed)}fps`;
         }
+
         clearReact();
-        // antsHome.drawTrail();
+        antsHome.drawTrail();
         antsHome.foods.forEach(f => {
           f.draw();
         });

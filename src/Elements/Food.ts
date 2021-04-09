@@ -13,8 +13,8 @@ export class Food implements BaseElement {
   }
 
   draw() {
-    this.ctx.strokeStyle = 'none';
-    this.ctx.fillStyle = '#22FF22';
+    this.ctx.strokeStyle = '#22FF22';
+    this.ctx.fillStyle = '#00000000';
     drawCicle(this.ctx, this.x, this.y, this.r);
   };
 }
