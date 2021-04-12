@@ -1,4 +1,3 @@
-import { drawCicle } from "../utils";
 import { BaseElement } from "./Base";
 
 export class Food implements BaseElement {
