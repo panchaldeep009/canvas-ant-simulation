@@ -1,11 +1,13 @@
 import { CircularElement } from "./Base";
 import { Position } from '../Math/Position';
-import { Ant } from "./Ants";
+import { Ant } from "./Ant";
+import { Food } from "./Food";
 
 export class AntsHome extends CircularElement {
   ants: Ant[];
   location: Position;
   radius: number = 100;
+  food: Food[] = [];
 
   public set size(value: number) {
     this.radius = value * 1.5;

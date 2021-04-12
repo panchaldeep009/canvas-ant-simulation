@@ -18,9 +18,13 @@ export class Ant extends CircularElement {
 
   constructor(ctx: CanvasRenderingContext2D, homePosition: Position) {
     super(ctx);
-    this.color = COLOR_RED;
     this.location = new Vector();
     this.homelocation = homePosition;
+  }
+
+  body() {
+    this.color = COLOR_RED;
+    super.body();
   }
 
   checkWallCollision() {

@@ -1,23 +1,24 @@
 import { useEffect, useRef } from "react"
 import { AntsHome } from "./Elements/AntsHome";
-// import { AntsHome } from "./Elements/Ant";
-// import { Food } from "./Elements/Food";
+import { Food } from "./Elements/Food";
+import './App.css';
 
 export const App = () => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const antsCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    const context = canvas?.getContext('2d');
-    if (context) {
+    const antsCtx = antsCanvasRef.current?.getContext('2d');
+    if (antsCtx) {
       const clearReact = () => {
-        context.fillStyle = '#1f1f1f'
-        context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+        antsCtx.fillStyle = '#1f1f1f'
+        antsCtx.fillRect(0, 0, antsCtx.canvas.width, antsCtx.canvas.height);
       }
 
       let animationFrameId: number;
       let oldTimeStamp: number;
-      const antsHome = new AntsHome(context, 50, 30);
+      const antsHome = new AntsHome(antsCtx, 50, 30);
+      antsHome.food = [new Food(antsCtx, 700, 100)];
+
       const fpsDisplay = document.getElementById('fps');
 
       const render:FrameRequestCallback = (timeStamp) => {
@@ -29,6 +30,9 @@ export const App = () => {
 
         clearReact();
         antsHome.draw();
+        antsHome.food.forEach((f) => {
+          f.draw();
+        })
         animationFrameId = window.requestAnimationFrame(render)
       }
       render(Number(new Date()))
@@ -50,11 +54,13 @@ export const App = () => {
       }}
     >
       <p id="fps">0</p>
-      <canvas 
-        ref={canvasRef}
-        width={1000}
-        height={600}
-      />
+      <div className="canvas-container">
+        <canvas 
+          ref={antsCanvasRef}
+          width={1000}
+          height={600}
+        />
+      </div>
     </div>
   )
 }
