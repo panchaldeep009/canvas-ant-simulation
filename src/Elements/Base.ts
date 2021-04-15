@@ -1,7 +1,6 @@
 import { Position } from "../Math/Position";
 
 export abstract class BaseElement {
-  abstract location: Position;
   ctx: CanvasRenderingContext2D;
 
   constructor(ctx: CanvasRenderingContext2D) {
@@ -20,6 +19,7 @@ export abstract class BaseElement {
 };
 
 export abstract class CircularElement extends BaseElement {
+  abstract location: Position;
   abstract radius: number;
 
   body () {

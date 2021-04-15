@@ -16,7 +16,7 @@ export const App = () => {
 
       let animationFrameId: number;
       let oldTimeStamp: number;
-      const antsHome = new AntsHome(antsCtx, 50, 30);
+      const antsHome = new AntsHome(antsCtx, 5, 30);
       antsHome.food = [new Food(antsCtx, 700, 100)];
 
       const fpsDisplay = document.getElementById('fps');
@@ -32,6 +32,9 @@ export const App = () => {
         antsHome.draw();
         antsHome.food.forEach((f) => {
           f.draw();
+        })
+        antsHome.ants.forEach((a) => {
+          a.walkingTrail.draw();
         })
         animationFrameId = window.requestAnimationFrame(render)
       }

@@ -1,6 +1,7 @@
 import { Position } from "../Math/Position";
 import { Vector } from "../Math/Vector";
 import { CircularElement } from "./Base";
+import { Trail } from "./Trail";
 
 const COLOR_RED = '#ff5555';
 const COLOR_GREEN = 'green';
@@ -9,6 +10,7 @@ const COLOR_BLUE = 'cyan';
 export class Ant extends CircularElement {
   location = new Vector();
   homelocation: Position;
+  walkingTrail: Trail;
 
   radius: number = 1.6;
   public set color(c: string) {
@@ -20,6 +22,7 @@ export class Ant extends CircularElement {
     super(ctx);
     this.location = new Vector();
     this.homelocation = homePosition;
+    this.walkingTrail = new Trail(ctx);
   }
 
   body() {
@@ -52,6 +55,7 @@ export class Ant extends CircularElement {
       this.location.y = currentY;
       stepInRandomDirection();
     }
+    this.walkingTrail.update(this.location);
   }
 
   draw(otherAnts: Ant[]) {
