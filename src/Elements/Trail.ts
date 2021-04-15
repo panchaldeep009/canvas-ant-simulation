@@ -9,6 +9,7 @@ export class Step extends CircularElement {
     super(ctx);
     this.location.x = x;
     this.location.y = y;
+    this.draw();
   }
 
   body() {
@@ -19,17 +20,17 @@ export class Step extends CircularElement {
 }
 
 export class Trail extends BaseElement {
-  trail: Step[] = [];
+  path: Step[] = [];
   maxLength = 100;
   step = 0;
 
   update(location: Position) {
     if (this.step === 0) {
-      if (!(this.trail.length < this.maxLength)) {
-        const [,...trail] = this.trail;
-        this.trail = trail;
+      if (!(this.path.length < this.maxLength)) {
+        const [,...trail] = this.path;
+        this.path = trail;
       }
-      this.trail = [...this.trail, new Step(this.ctx, location.x, location.y)];
+      this.path = [...this.path, new Step(this.ctx, location.x, location.y)];
     }
     if(this.step === 4) {
       this.step = 0;
@@ -38,11 +39,10 @@ export class Trail extends BaseElement {
     }
   }
 
-  body() { }
-
-  draw() {
-    this.trail.forEach(step => {
-      step.draw();
-    })
+  reset() {
+    this.step = 0;
+    this.path = [];
   }
+
+  body() { }
 }

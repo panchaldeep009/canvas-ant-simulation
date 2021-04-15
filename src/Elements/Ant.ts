@@ -2,7 +2,7 @@ import { Position } from "../Math/Position";
 import { Vector } from "../Math/Vector";
 import { CircularElement } from "./Base";
 import { Food } from "./Food";
-import { Trail } from "./Trail";
+import { Step, Trail } from "./Trail";
 
 const COLOR_RED = '#ff5555';
 const COLOR_GREEN = 'green';
@@ -13,6 +13,7 @@ export class Ant extends CircularElement {
   homelocation: Position;
   walkingTrail: Trail;
   carryingFood?: Food;
+  followingTarget?: CircularElement;
 
   radius: number = 1.6;
   public set color(c: string) {
@@ -20,11 +21,11 @@ export class Ant extends CircularElement {
     this.ctx.fillStyle = c;
   }
 
-  constructor(ctx: CanvasRenderingContext2D, homePosition: Position) {
+  constructor(ctx: CanvasRenderingContext2D, backgroundCtx: CanvasRenderingContext2D, homePosition: Position) {
     super(ctx);
     this.location = new Vector();
     this.homelocation = homePosition;
-    this.walkingTrail = new Trail(ctx);
+    this.walkingTrail = new Trail(backgroundCtx);
   }
 
   body() {
@@ -69,26 +70,38 @@ export class Ant extends CircularElement {
       this.location.y = currentY;
       stepInRandomDirection();
     }
+    if (this.location.getDistanceFrom(this.homelocation) < 30) {
+      this.walkingTrail.reset();
+    }
     this.walkingTrail.update(this.location);
   }
 
+  walkTowardsTarget() {
+    if (this.followingTarget ) {
+      this.location.stepTowards(this.followingTarget.location);
+    }
+  }
+
   draw(otherAnts: Ant[], foods: Food[]) {
-    if (!this.checkOtherAntsCollision(otherAnts)) {
-      if (!this.carryingFood) {
+    // if (!this.checkOtherAntsCollision(otherAnts)) {
+      if (!this.carryingFood && !this.followingTarget) {
         const nearbyFood = this.getNearByFood(foods);
         if (nearbyFood) {
-          console.log(nearbyFood);
-          console.log(nearbyFood.distanceBetween(this));
           if (nearbyFood.distanceBetween(this) < 1) {
             this.carryingFood = nearbyFood;
+            this.followingTarget = undefined;
           } else {
-            this.location.stepTowards(nearbyFood.location);
+            this.followingTarget = nearbyFood;
           }
-        } else {
-          this.randomWalk();
         }
       }
-    } 
+
+      if (this.followingTarget) {
+        this.walkTowardsTarget();
+      } else {
+        this.randomWalk();
+      }
+    // } 
     super.draw();
   }
 }

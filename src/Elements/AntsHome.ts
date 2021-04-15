@@ -13,8 +13,8 @@ export class AntsHome extends CircularElement {
     this.radius = value * 1.5;
   }
 
-  constructor(ctx: CanvasRenderingContext2D, totalAnts: number, size = 100) {
-    super(ctx);
+  constructor(antCtx: CanvasRenderingContext2D, backgroundCtx: CanvasRenderingContext2D, frogroundCtx: CanvasRenderingContext2D, totalAnts: number, size = 100) {
+    super(frogroundCtx);
     this.size = size;
     this.location = new Position();
     this.location.x = this.ctx.canvas.width / 2;
@@ -23,12 +23,13 @@ export class AntsHome extends CircularElement {
     this.ants = [...Array(totalAnts)].map((_, i, all) => {
       const direction = ((360 / all.length) * i);
       const thita = (Math.PI * direction) / 180;
-      const ant = new Ant(ctx, this.location)
+      const ant = new Ant(antCtx, backgroundCtx, this.location)
       ant.location.direction = direction;
       ant.location.x = this.location.x + (Math.cos(thita) * (size/2));
       ant.location.y = this.location.y + (Math.sin(thita) * (size/2));
       return ant;
     });
+    this.draw();
   }
 
   body() {
@@ -42,10 +43,9 @@ export class AntsHome extends CircularElement {
     super.body();
   }
 
-  draw() {
+  drawAnts() {
     this.ants.forEach((ant, i) => {
       ant.draw(i ? this.ants.slice(0, i - 1) : [], this.food);
     });
-    super.draw()
   }
 }

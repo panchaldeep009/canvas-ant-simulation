@@ -9,6 +9,7 @@ export class Food extends CircularElement {
     super(ctx)
     this.location.x = x;
     this.location.y = y;
+    this.draw();
   }
 
   body() {
