@@ -44,7 +44,7 @@ export class AntsHome extends CircularElement {
 
   draw() {
     this.ants.forEach((ant, i) => {
-      ant.draw(i ? this.ants.slice(0, i - 1) : []);
+      ant.draw(i ? this.ants.slice(0, i - 1) : [], this.food);
     });
     super.draw()
   }

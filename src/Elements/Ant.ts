@@ -1,6 +1,7 @@
 import { Position } from "../Math/Position";
 import { Vector } from "../Math/Vector";
 import { CircularElement } from "./Base";
+import { Food } from "./Food";
 import { Trail } from "./Trail";
 
 const COLOR_RED = '#ff5555';
@@ -11,6 +12,7 @@ export class Ant extends CircularElement {
   location = new Vector();
   homelocation: Position;
   walkingTrail: Trail;
+  carryingFood?: Food;
 
   radius: number = 1.6;
   public set color(c: string) {
@@ -43,6 +45,18 @@ export class Ant extends CircularElement {
     return !!otherAnts.find(otherAnt => this.location.velocity > this.distanceBetween(otherAnt));
   }
 
+  getNearByFood(foods: Food[]) {
+    return foods
+      .filter(food => food.distanceBetween(this) < 15)
+      .reduce((currentFood: Food | undefined, food: Food) => {
+        if (!currentFood) {
+          return food;
+        }
+        return food.distanceBetween(this) < currentFood.distanceBetween(this) ?
+          food : currentFood
+      }, undefined);
+  }
+
   randomWalk() {
     const currentX = this.location.x;
     const currentY = this.location.y;
@@ -58,10 +72,23 @@ export class Ant extends CircularElement {
     this.walkingTrail.update(this.location);
   }
 
-  draw(otherAnts: Ant[]) {
+  draw(otherAnts: Ant[], foods: Food[]) {
     if (!this.checkOtherAntsCollision(otherAnts)) {
-      this.randomWalk()
-    }
+      if (!this.carryingFood) {
+        const nearbyFood = this.getNearByFood(foods);
+        if (nearbyFood) {
+          console.log(nearbyFood);
+          console.log(nearbyFood.distanceBetween(this));
+          if (nearbyFood.distanceBetween(this) < 1) {
+            this.carryingFood = nearbyFood;
+          } else {
+            this.location.stepTowards(nearbyFood.location);
+          }
+        } else {
+          this.randomWalk();
+        }
+      }
+    } 
     super.draw();
   }
 }

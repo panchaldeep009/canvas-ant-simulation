@@ -16,7 +16,7 @@ export const App = () => {
 
       let animationFrameId: number;
       let oldTimeStamp: number;
-      const antsHome = new AntsHome(antsCtx, 5, 30);
+      const antsHome = new AntsHome(antsCtx, 10, 30);
       antsHome.food = [new Food(antsCtx, 700, 100)];
 
       const fpsDisplay = document.getElementById('fps');
